@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Find your Vishnu Sahasranamam birth shloka from your nakshatra and pāda.">
+<style>:root{color-scheme:light;box-sizing:border-box}body{margin:0}img{max-width:100%}</style>
+<title>Find Your Birth Shloka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Tiro+Devanagari+Sanskrit&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: one centred column. Home = two choices; "know" = pick nakshatra + pāda; "calc" = birth-detail calculator. */
+:root{
+  --bg:#f6efe3; --card:#fffaf1; --ink:#3a1418; --muted:#7a5a4e;
+  --maroon:#5c0f1c; --on-maroon:#fffaf1; --gold:#b8862b; --on-gold:#2a161b; --saffron:#c8650f; --line:#e4d3b4;
+  --warn-bg:#fbecd2; --warn-line:#e3b56a; --err:#b3261e;
+  --display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --deva:"Tiro Devanagari Sanskrit","Noto Serif Devanagari",serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1c0f12; --card:#2a161b; --ink:#f3e6d2; --muted:#c9ad97;
+  --maroon:#f0c56d; --on-maroon:#2a161b; --gold:#e0b25a; --on-gold:#2a161b; --saffron:#f39a45; --line:#4a2c30;
+  --warn-bg:#3a2617; --warn-line:#8a6330; --err:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1c0f12; --card:#2a161b; --ink:#f3e6d2; --muted:#c9ad97;
+  --maroon:#f0c56d; --on-maroon:#2a161b; --gold:#e0b25a; --on-gold:#2a161b; --saffron:#f39a45; --line:#4a2c30;
+  --warn-bg:#3a2617; --warn-line:#8a6330; --err:#ff8a80; color-scheme:dark}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px;display:flex;flex-direction:column;gap:18px}
+header{text-align:center;display:flex;flex-direction:column;gap:4px}
+.om{font-family:var(--deva);color:var(--gold);font-size:1.15rem}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,7vw,2.6rem);line-height:1.1;margin:0;color:var(--maroon);text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.15;margin:0;color:var(--maroon);text-wrap:balance}
+.sub{color:var(--muted);margin:0;font-size:.98rem}
+.view{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.choice{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:2px solid var(--maroon);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:4px;text-align:left}
+.choice.alt{border-color:var(--gold)}
+.choice b{font-family:var(--display);font-size:1.5rem;line-height:1.15;color:var(--maroon)}
+.choice span{color:var(--muted);font-size:.95rem}
+.choice i{font-style:normal;align-self:flex-start;margin-top:8px;background:var(--maroon);color:var(--on-maroon);border-radius:999px;padding:9px 16px;font-weight:600;font-size:.95rem}
+.choice.alt i{background:var(--gold);color:var(--on-gold)}
+.or{text-align:center;color:var(--muted);font-size:.82rem;letter-spacing:.12em}
+label{display:block;font-weight:600;font-size:.92rem;margin-bottom:6px}
+.field{display:flex;flex-direction:column;min-width:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:420px){.row{grid-template-columns:1fr}}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;box-sizing:border-box;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.choice:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.check{display:flex;align-items:center;gap:8px;font-size:.95rem;font-weight:400;margin:0}
+.check input{width:auto}
+.btn{font:inherit;font-weight:600;background:var(--maroon);color:var(--on-maroon);border:0;border-radius:999px;padding:13px 20px;cursor:pointer}
+.back{all:unset;cursor:pointer;color:var(--maroon);font-weight:600;font-size:.95rem;align-self:flex-start}
+.linkbtn{all:unset;cursor:pointer;color:var(--maroon);font-weight:600;text-decoration:underline}
+.hint{font-size:.85rem;color:var(--muted);margin:0}
+.result{border:2px solid var(--gold);text-align:center;gap:12px}
+.tag{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fact{background:var(--bg);border-radius:10px;padding:10px 6px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.fact b{font-family:var(--display);font-size:1.3rem;line-height:1.1;color:var(--maroon);overflow-wrap:anywhere}
+.fact span{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.shloka{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,9vw,3rem);line-height:1;color:var(--saffron);margin:4px 0 0}
+.span{margin:0;font-size:.93rem;color:var(--ink)}
+.watch{display:inline-block;text-decoration:none;font-weight:600;background:var(--gold);color:var(--on-gold);border-radius:999px;padding:12px 20px;align-self:center}
+.warn{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:12px;text-align:left;font-size:.95rem;display:flex;flex-direction:column;gap:8px}
+.warn p{margin:0}
+.warn b{color:var(--maroon)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt small{font-size:.85rem;color:var(--muted)}
+.opt strong{font-family:var(--display);font-size:1.35rem;color:var(--saffron);line-height:1.1}
+.method{font-size:.86rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;text-align:left;margin:0}
+.method b{color:var(--ink)}
+.alts{display:flex;flex-direction:column;gap:6px;text-align:left}
+.alt{background:var(--bg);border-radius:10px;padding:8px 12px;font-size:.95rem;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.alt b{color:var(--maroon)}
+.err{color:var(--err);font-weight:600;margin:0}
+footer{font-size:.82rem;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:6px}
+footer p{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="om" lang="sa">ॐ श्री विष्णु सहस्रनाम</div>
+    <h1>Find Your Birth Shloka</h1>
+    <p class="sub">A devotional practice links each of the 108 nakshatra pādas to one shloka of Śrī Viṣṇu Sahasranāmam.</p>
+  </header>
+
+  <!-- HOME -->
+  <section class="view" id="v-home">
+    <button class="choice" type="button" data-go="know">
+      <b>I know my nakshatra and pāda</b>
+      <span>From your horoscope (jātakam). Most accurate.</span>
+      <i>Show my shloka →</i>
+    </button>
+    <div class="or">OR</div>
+    <button class="choice alt" type="button" data-go="calc">
+      <b>I don't know them</b>
+      <span>Calculate from my date, time and place of birth.</span>
+      <i>Calculate →</i>
+    </button>
+    <p class="hint" style="text-align:center">Nothing you enter is saved or sent anywhere.</p>
+  </section>
+
+  <!-- KNOW -->
+  <section class="view" id="v-know" hidden>
+    <button class="back" type="button" data-go="home">← Back</button>
+    <form class="card" id="fk" novalidate>
+      <h2>Choose from your horoscope</h2>
+      <div class="field">
+        <label for="kn">Nakshatra</label>
+        <select id="kn"></select>
+      </div>
+      <div class="field">
+        <label for="kp">Pāda</label>
+        <select id="kp"><option value="1">Pāda 1</option><option value="2">Pāda 2</option><option value="3">Pāda 3</option><option value="4">Pāda 4</option></select>
+      </div>
+      <button class="btn" type="submit">Show my shloka</button>
+      <p class="hint">The rāśi is filled in automatically from the nakshatra and pāda.</p>
+    </form>
+    <section class="card result" id="rk" aria-live="polite" hidden></section>
+  </section>
+
+  <!-- CALC -->
+  <section class="view" id="v-calc" hidden>
+    <button class="back" type="button" data-go="home">← Back</button>
+    <form class="card" id="fc" novalidate>
+      <h2>Calculate from birth details</h2>
+      <div class="field">
+        <label for="d">Date of birth</label>
+        <input type="date" id="d" required>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="t">Time of birth</label>
+          <input type="time" id="t">
+        </div>
+        <div class="field">
+          <label for="z">Born in</label>
+          <select id="z"></select>
+        </div>
+      </div>
+      <label class="check" for="nt"><input type="checkbox" id="nt"> I don't know my birth time</label>
+      <button class="btn" type="submit">Calculate</button>
+      <p class="hint">Only the country (time zone) of your birthplace matters, not the town.</p>
+    </form>
+    <section class="card result" id="rc" aria-live="polite" hidden></section>
+  </section>
+
+  <footer>
+    <p>Shloka numbering follows the VIśVĀS edition of Śrī Viṣṇu Sahasranāmam.</p>
+    <p>Mantra Shakti · Om Namo Nārāyaṇāya</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script>
+(function(){
+  const PLAYLIST = "https://www.youtube.com/channel/UC7R1FrSt8s2YYVcDSbi8hEQ/playlists";
+  const VIDEOS = {0:"https://youtu.be/7ZHvAiO98bI",1:"https://youtu.be/UqpdMfGS1cY"}; // nakshatra index -> video
+  const NEAR_MIN = 60; // show the neighbouring pāda when the birth is within this many minutes of a change
+
+  const NAK = [["Aśvinī","Ashwini"],["Bharaṇī","Bharani"],["Kṛttikā","Krittika"],["Rohiṇī","Rohini"],["Mṛgaśīrṣa","Mrigashira"],["Ārdrā","Ardra"],["Punarvasu","Punarvasu"],["Puṣya","Pushya"],["Āśleṣā","Ashlesha"],["Maghā","Magha"],["Pūrva Phalgunī","Purva Phalguni"],["Uttara Phalgunī","Uttara Phalguni"],["Hasta","Hasta"],["Citrā","Chitra"],["Svātī","Swati"],["Viśākhā","Vishakha"],["Anurādhā","Anuradha"],["Jyeṣṭhā","Jyeshtha"],["Mūla","Mula"],["Pūrva Āṣāḍhā","Purva Ashadha"],["Uttara Āṣāḍhā","Uttara Ashadha"],["Śravaṇa","Shravana"],["Dhaniṣṭhā","Dhanishta"],["Śatabhiṣā","Shatabhisha"],["Pūrva Bhādrapadā","Purva Bhadrapada"],["Uttara Bhādrapadā","Uttara Bhadrapada"],["Revatī","Revati"]];
+  const RASI = [["Meṣa","Mesha"],["Vṛṣabha","Vrishabha"],["Mithuna","Mithuna"],["Karka","Karka"],["Siṁha","Simha"],["Kanyā","Kanya"],["Tulā","Tula"],["Vṛścika","Vrishchika"],["Dhanu","Dhanu"],["Makara","Makara"],["Kumbha","Kumbha"],["Mīna","Meena"]];
+  const ZONES = [["Asia/Kolkata","India"],["Asia/Kathmandu","Nepal"],["Asia/Colombo","Sri Lanka"],["Asia/Dhaka","Bangladesh"],["Asia/Dubai","UAE / Oman"],["Asia/Riyadh","Saudi Arabia / Qatar / Kuwait / Bahrain"],["Asia/Singapore","Singapore / Malaysia"],["Asia/Hong_Kong","Hong Kong / China"],["Asia/Tokyo","Japan"],["Europe/London","UK / Ireland"],["Europe/Berlin","Germany / Central Europe"],["Africa/Johannesburg","South Africa"],["Africa/Nairobi","Kenya / East Africa"],["Indian/Mauritius","Mauritius"],["America/New_York","USA – Eastern"],["America/Chicago","USA – Central"],["America/Denver","USA – Mountain"],["America/Los_Angeles","USA – Pacific"],["America/Toronto","Canada – Eastern"],["America/Vancouver","Canada – Pacific"],["America/Port_of_Spain","Trinidad & Tobago"],["America/Guyana","Guyana"],["Australia/Sydney","Australia – Sydney / Melbourne"],["Australia/Perth","Australia – Perth"],["Pacific/Auckland","New Zealand"],["Pacific/Fiji","Fiji"],["UTC","UTC"]];
+
+  const $ = id => document.getElementById(id);
+  const rasiOf = shloka => Math.floor((shloka-1)/9);
+  const link = n => VIDEOS[n] || PLAYLIST;
+  const linkLabel = n => VIDEOS[n] ? "Watch your shlokas" : "Open the series (your video is coming soon)";
+  const el = (tag, cls, text) => { const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
+
+  ZONES.forEach(([v,l])=>{const o=el("option",null,l);o.value=v;$("z").appendChild(o);});
+  NAK.forEach(([s,e],i)=>{const o=el("option",null,s===e?s:`${s} (${e})`);o.value=i;$("kn").appendChild(o);});
+
+  // ---------- views ----------
+  const VIEWS=["home","know","calc"];
+  function show(v){ if(!VIEWS.includes(v)) v="home"; VIEWS.forEach(x=>$("v-"+x).hidden = x!==v); }
+  function go(v){ if(v==="home"){ history.replaceState(null,"",location.pathname+location.search); show("home"); } else location.hash=v; window.scrollTo(0,0); }
+  document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.go)));
+  window.addEventListener("hashchange",()=>show(location.hash.slice(1)));
+  show(location.hash.slice(1));
+
+  // ---------- shared result pieces ----------
+  function factsBox(shloka){
+    const n=Math.floor((shloka-1)/4), p=(shloka-1)%4+1;
+    const facts=el("div","facts");
+    [[RASI[rasiOf(shloka)][0],"Rāśi"],[NAK[n][0],"Nakshatra"],["Pāda "+p,"Pāda"]].forEach(([v,k])=>{const f=el("div","fact");f.append(el("b",null,v),el("span",null,k));facts.appendChild(f);});
+    return facts;
+  }
+  function watch(n){const a=el("a","watch",linkLabel(n));a.href=link(n);a.target="_blank";a.rel="noopener";return a;}
+
+  // ---------- KNOW ----------
+  $("fk").addEventListener("submit",e=>{
+    e.preventDefault();
+    const n=+$("kn").value, p=+$("kp").value, shloka=n*4+p, r=$("rk");
+    r.textContent=""; r.hidden=false;
+    r.append(el("div","tag","Your birth shloka"), factsBox(shloka), el("p","shloka","Shloka No. "+shloka),
+      el("p","span","in Śrī Viṣṇu Sahasranāmam. Chant it 11 times."), watch(n));
+    r.scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+  function openKnow(n,p){ $("kn").value=n; $("kp").value=p; $("rk").hidden=true; go("know"); }
+
+  // ---------- astronomy ----------
+  function tzOffsetMs(utcMs, tz){
+    const p = new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(new Date(utcMs));
+    const g = k => +p.find(x=>x.type===k).value;
+    return Date.UTC(g("year"),g("month")-1,g("day"),g("hour"),g("minute"),g("second")) - utcMs;
+  }
+  function localToUtc(y,m,d,h,mi,tz){
+    const guess = Date.UTC(y,m-1,d,h,mi);
+    let utc = guess - tzOffsetMs(guess,tz);
+    utc = guess - tzOffsetMs(utc,tz);
+    return utc;
+  }
+  function lahiri(date){const T=Astronomy.MakeTime(date).tt/36525;return 23.85305+1.396971*T+0.000308*T*T;}
+  function sid(ms){const d=new Date(ms);let s=(Astronomy.EclipticGeoMoon(d).lon-lahiri(d))%360;if(s<0)s+=360;return s;}
+  const PADA = 360/108;
+  const shlokaAt = ms => Math.floor(sid(ms)/PADA)+1;
+  // Time (ms) when the Moon reaches sidereal longitude `deg`, searched in [lo, hi].
+  function crossing(deg, lo, hi){
+    const f = ms => { let x=(sid(ms)-deg)%360; if(x>180)x-=360; if(x<=-180)x+=360; return x; };
+    for(let i=0;i<40;i++){const m=(lo+hi)/2; if(f(m)<0) lo=m; else hi=m;}
+    return (lo+hi)/2;
+  }
+  const H12 = 12*3600e3;
+  function padaSpan(ms){
+    const k=Math.floor(sid(ms)/PADA);
+    return {shloka:k+1, start:crossing(k*PADA, ms-H12, ms), end:crossing(((k+1)%108)*PADA, ms, ms+H12)};
+  }
+  function fmt(ms,tz,withDate){
+    const o={timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true};
+    if(withDate){o.day="numeric";o.month="short";o.year="numeric";}
+    return new Intl.DateTimeFormat("en-GB",o).format(new Date(ms)).replace(/\b(am|pm)\b/,s=>s.toUpperCase());
+  }
+  const mins = ms => Math.round(ms/60000);
+  const dur = m => m<60 ? `${m} minutes` : `${Math.floor(m/60)} h ${m%60} min`;
+  const prevS = s => s===1?108:s-1, nextS = s => s===108?1:s+1;
+  const partsOf = s => ({n:Math.floor((s-1)/4), p:(s-1)%4+1});
+
+  function methodNote(n,p){
+    const m=el("p","method");
+    m.append("Calculated by the modern ", el("b",null,"Drik panchāṅgam"), " method (Lahiri ayanāṁśa). Traditional Tamil and other Vākya panchāṅgams can differ. ",
+      el("b",null,"If your horoscope shows a different pāda, follow your horoscope:")," ");
+    const b=el("button","linkbtn","choose it here");b.type="button";b.addEventListener("click",()=>openKnow(n,p));
+    m.append(b,".");
+    return m;
+  }
+  function err(msg){const r=$("rc");r.textContent="";r.hidden=false;r.appendChild(el("p","err",msg));}
+
+  // ---------- CALC ----------
+  $("nt").addEventListener("change",()=>{$("t").disabled=$("nt").checked;});
+  $("fc").addEventListener("submit",e=>{
+    e.preventDefault();
+    if(typeof Astronomy==="undefined"){err("The calculator didn't load. Check your internet connection and refresh the page.");return;}
+    const dv=$("d").value, tz=$("z").value, noTime=$("nt").checked, tv=$("t").value;
+    if(!dv){err("Enter your date of birth.");return;}
+    const [y,m,d]=dv.split("-").map(Number);
+    const r=$("rc");
+    if(!noTime){
+      if(!tv){err("Enter your birth time, or tick “I don't know my birth time”.");return;}
+      const [h,mi]=tv.split(":").map(Number);
+      const at=localToUtc(y,m,d,h,mi,tz), sp=padaSpan(at), {n,p}=partsOf(sp.shloka);
+      r.textContent=""; r.hidden=false;
+      r.append(el("div","tag","Calculated result"), factsBox(sp.shloka), el("p","shloka","Shloka No. "+sp.shloka));
+      r.append(el("p","span",`${NAK[n][0]} Pāda ${p} ran from ${fmt(sp.start,tz,true)} to ${fmt(sp.end,tz,true)}.`));
+      const toStart=mins(at-sp.start), toEnd=mins(sp.end-at);
+      let other=null, note="";
+      if(toEnd<NEAR_MIN){ other=nextS(sp.shloka); const o=partsOf(other); note=`${NAK[o.n][0]} Pāda ${o.p} begins at ${fmt(sp.end,tz,false)}, only ${dur(toEnd)} after your birth time`; }
+      else if(toStart<NEAR_MIN){ other=prevS(sp.shloka); const o=partsOf(other); note=`${NAK[n][0]} Pāda ${p} began at ${fmt(sp.start,tz,false)}, only ${dur(toStart)} before your birth time`; }
+      if(other){
+        const w=el("div","warn"), t=el("p");
+        t.append(el("b",null,"Close to a pāda change. "), note+", so your horoscope may show either:");
+        const two=el("div","two");
+        (other===nextS(sp.shloka) ? [sp.shloka,other] : [other,sp.shloka]).forEach(s=>{
+          const q=partsOf(s), o=el("div","opt"); o.append(el("small",null,`${NAK[q.n][0]} Pāda ${q.p}`), el("strong",null,"Shloka "+s)); two.appendChild(o);});
+        w.append(t,two,el("p",null,"Check your jātakam and choose the one it shows."));
+        r.appendChild(w);
+      }
+      r.append(watch(n), methodNote(n,p));
+      r.scrollIntoView({behavior:"smooth",block:"nearest"});
+      return;
+    }
+    // Unknown time: list every pāda the local day passes through, with exact change times.
+    const dayStart=localToUtc(y,m,d,0,0,tz), dayEnd=localToUtc(y,m,d,23,59,tz)+60000;
+    const segs=[]; let t=dayStart;
+    while(t<dayEnd){ const sp=padaSpan(t); segs.push({shloka:sp.shloka, from:t, to:Math.min(sp.end,dayEnd)}); t=sp.end+1000; }
+    r.textContent=""; r.hidden=false;
+    r.appendChild(el("div","tag","Calculated result"));
+    if(segs.length===1){
+      const {n,p}=partsOf(segs[0].shloka);
+      r.append(factsBox(segs[0].shloka), el("p","shloka","Shloka No. "+segs[0].shloka), el("p","span","The Moon stayed in one pāda for the whole day, so your birth time doesn't change the result."), watch(n), methodNote(n,p));
+      return;
+    }
+    r.appendChild(el("p","span","Without a birth time, your day falls in more than one pāda. Check your jātakam, or ask a family member for your birth time:"));
+    const box=el("div","alts");
+    segs.forEach(s=>{const q=partsOf(s.shloka), row=el("div","alt");
+      const to = s.to>=dayEnd ? "midnight" : fmt(s.to,tz,false);
+      row.append(el("span",null,`${fmt(s.from,tz,false)} – ${to}: ${RASI[rasiOf(s.shloka)][0]} · ${NAK[q.n][0]} · Pāda ${q.p}`), el("b",null,"Shloka "+s.shloka)); box.appendChild(row);});
+    const f=partsOf(segs[0].shloka);
+    r.append(box, watch(f.n), methodNote(f.n,f.p));
+    r.scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+
+  // Sensible defaults for the calculator form.
+  $("z").value="Asia/Kolkata";
+})();
+</script>
+</body>
+</html>
